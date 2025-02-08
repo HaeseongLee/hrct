@@ -1,0 +1,6 @@
+bool set_task false
+---
+geometry_msgs/Pose hole
+geometry_msgs/Pose peg
+
+

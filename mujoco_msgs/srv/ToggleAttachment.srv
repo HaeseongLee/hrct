@@ -1,0 +1,7 @@
+# Request
+bool attach  # true -> attach, false -> detach
+string child  
+string parent 
+---
+# Response
+bool success

@@ -1,0 +1,6 @@
+bool set_task false
+---
+int64 n_obj
+std_msgs/String[] names
+geometry_msgs/PoseArray poses
+
