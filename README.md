@@ -6,12 +6,13 @@ H-Robot Control Tools
 1. start mujoco simulator.
 
    
-'''bash
+```bash
 ros2 run mujoco_ros fr3_w_hand
-
+```
 
 3. start task manager.
 
    
-'''bash
+```bash
 ros2 run mujoco_task_planner block_sorting
+```
