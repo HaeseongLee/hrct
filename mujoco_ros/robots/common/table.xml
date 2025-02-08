@@ -1,0 +1,28 @@
+<mujocoinclude>
+    <!-- 테이블 상판 (plate) -->
+    <body name="table_top" pos="0 0 0" euler="0 0 0">
+      <geom type="box" size="0.6 0.4 0.02" rgba="0.5 0.3 0.1 1" />
+        <body name="leg_1" pos="-0.5 -0.35 -0.17">
+            <geom type="box" size="0.03 0.03 0.15" rgba="0.8 0.6 0.4 1" />
+        </body>
+        <!-- 다리 2 -->
+        <body name="leg_2" pos="0.5 -0.350 -0.17">
+            <geom type="box" size="0.03 0.03 0.15" rgba="0.8 0.6 0.4 1" />
+        </body>
+        <!-- 다리 3 -->
+        <body name="leg_3" pos="-0.5 0.35 -0.17">
+            <geom type="box" size="0.03 0.03 0.15" rgba="0.8 0.6 0.4 1" />
+        </body>
+        <!-- 다리 4 -->
+        <body name="leg_4" pos="0.5 0.35 -0.17">
+            <geom type="box" size="0.03 0.03 0.15" rgba="0.8 0.6 0.4 1" />
+        </body>
+
+        <body name="workspace_plate" pos="0.0 0.1 0.0101"> <!-- 테이블 위에 위치 -->
+        <!-- plate 설정: 충돌을 무시하고 시각화용 -->
+            <geom type="box" size="0.3 0.3 0.01" rgba="0 0.5 0 0.5" contype="0" conaffinity="0"/>
+        </body>
+    </body>
+
+  
+</mujocoinclude>

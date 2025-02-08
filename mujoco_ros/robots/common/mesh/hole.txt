@@ -1,0 +1,5 @@
+type : cylinder
+Geometry:
+  - inner_diameter : 1.0 m
+  - outer_diameter : 1.2 m
+  - height = 1.0 m

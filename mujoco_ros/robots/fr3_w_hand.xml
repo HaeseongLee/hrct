@@ -1,0 +1,20 @@
+<mujoco model="fr3_w_hand">
+
+    <include file="common/assets.xml"/>
+    <include file="fr3/assets.xml"/>
+    <include file="franka_hand/assets.xml"/>
+
+    <include file = 'fr3/actuator.xml'/>
+    <include file = 'franka_hand/actuator.xml'/>
+
+    <worldbody>
+        <include file="common/scene.xml" />    
+        <include file="fr3/fr3_hand_urdf.xml" />   
+        <body name="table" pos="0.6 0 0.3" euler="0 0 1.5707963267948966">
+            <include file="common/table.xml"/>
+        </body> 
+
+
+    </worldbody>
+
+</mujoco>

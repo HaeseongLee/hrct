@@ -1,0 +1,53 @@
+<mujoco model="block_sorting">    
+    <extension>
+        <plugin plugin="mujoco.sdf.sdflib">
+            <instance name="sdf">
+                    <config key="aabb" value="0" />
+            </instance>
+        </plugin>
+    </extension>
+
+    <option sdf_iterations="1" sdf_initpoints="2"/>
+
+    <asset>
+        <mesh name="basket" file="../common/mesh/basket.obj" scale="0.1 0.1 0.1" >
+            <plugin instance="sdf" />
+        </mesh>
+    </asset>
+
+
+    <include file="common/assets.xml"/>
+    <include file="fr3/assets.xml"/>
+    <include file="franka_hand/assets.xml"/>
+
+    <include file = 'fr3/actuator.xml'/>
+    <include file = 'franka_hand/actuator.xml'/>
+
+    <worldbody>
+        <include file="common/scene.xml" />    
+        <include file="fr3/fr3_hand_urdf.xml" />   
+        <include file="common/random_blocks.xml"/>
+
+        <body pos="0.6 0 0.3" euler="0 0 1.5707963267948966">
+            <include file="common/table.xml"/>
+        </body> 
+
+        <camera name="top_down_cam" pos="0.8 0.0 0.8" euler="0 0.7854 1.570796326794897" mode="fixed" fovy="74.3"/>
+        <geom type="box" pos="0.8 0.0 0.8" euler="0 0.7854 1.570796326794897" size ="0.09 0.025 0.025"/>
+
+
+        <body name="red_basket" pos="0.5 0.35 0.37" euler="1.570796326794897 0 0 ">
+            <geom name="red_basket" type="sdf" mesh="basket" rgba="0.94 0.50 0.50 1.0">
+                <plugin instance="sdf" />
+            </geom>
+        </body>
+
+        <body name="blue_basket" pos="0.5 -0.35 0.37" euler="1.570796326794897 0 0 ">
+            <geom name="blue_basket" type="sdf" mesh="basket" rgba="0.69 0.88 0.90 1.0">
+                <plugin instance="sdf" />
+            </geom>
+        </body>
+
+    </worldbody>
+
+</mujoco>

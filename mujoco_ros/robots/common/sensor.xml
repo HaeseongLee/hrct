@@ -1,0 +1,16 @@
+<mujocoinclude>
+    <sensor>
+        <torque name="fr3_joint1" site="fr3_joint1"/>
+        <torque name="fr3_joint2" site="fr3_joint2"/>
+        <torque name="fr3_joint3" site="fr3_joint3"/>
+        <torque name="fr3_joint4" site="fr3_joint4"/>
+        <torque name="fr3_joint5" site="fr3_joint5"/>
+        <torque name="fr3_joint6" site="fr3_joint6"/>
+        <torque name="fr3_joint7" site="fr3_joint7"/>
+
+        <force name="ee_force" site="flange_site"/>
+        <torque name="ee_torque" site="flange_site"/>
+
+    </sensor>
+
+</mujocoinclude>

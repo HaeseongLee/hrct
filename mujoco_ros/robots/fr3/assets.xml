@@ -1,0 +1,61 @@
+<mujocoinclude>
+
+    <default>
+        <default class="fr3">
+            <!-- <material specular="0.5" shininess="0.25"/> -->
+            <!-- <joint armature="0.1" damping="1"/> -->
+            <!-- <position inheritrange="1"/> -->
+            <default class="visual">
+                <geom type="mesh" group="2" contype="0" conaffinity="0"/>
+            </default>
+            <default class="collision">
+                <geom type="mesh" group="3" mass="0" density="0"/>
+             </default>
+            <site size="0.001" rgba="0.5 0.5 0.5 0.3" group="4"/>
+        </default>
+    </default>
+
+
+    <compiler angle="radian" autolimits="true" meshdir = "./mesh"/>
+    
+    <asset>
+        <mesh file="mesh/vis/link0_0.obj"/>
+        <mesh file="mesh//vis/link0_1.obj"/>
+        <mesh file="mesh//vis/link0_2.obj"/>
+        <mesh file="mesh//vis/link0_3.obj"/>
+        <mesh file="mesh/vis/link0_4.obj"/>
+        <mesh file="mesh/vis/link0_5.obj"/>
+        <mesh file="mesh/vis/link0_6.obj"/>
+        <mesh file="mesh/vis/link1.obj"/>
+        <mesh file="mesh/vis/link2.obj"/>
+        <mesh file="mesh/vis/link3_0.obj"/>
+        <mesh file="mesh/vis/link3_1.obj"/>
+        <mesh file="mesh/vis/link4_0.obj"/>
+        <mesh file="mesh/vis/link4_1.obj"/>
+        <mesh file="mesh/vis/link5_0.obj"/>
+        <mesh file="mesh/vis/link5_1.obj"/>
+        <mesh file="mesh/vis/link5_2.obj"/>
+        <mesh file="mesh/vis/link6_0.obj"/>
+        <mesh file="mesh/vis/link6_1.obj"/>
+        <mesh file="mesh/vis/link6_2.obj"/>
+        <mesh file="mesh/vis/link6_3.obj"/>
+        <mesh file="mesh/vis/link6_4.obj"/>
+        <mesh file="mesh/vis/link6_5.obj"/>
+        <mesh file="mesh/vis/link6_6.obj"/>
+        <mesh file="mesh/vis/link6_7.obj"/>
+        <mesh file="mesh/vis/link7_0.obj"/>
+        <mesh file="mesh/vis/link7_1.obj"/>
+        <mesh file="mesh/vis/link7_2.obj"/>
+        <mesh file="mesh/vis/link7_3.obj"/>
+
+        <mesh name="link0_coll" file="mesh/coll/link0.stl"/>
+        <mesh name="link1_coll" file="mesh/coll/link1.stl"/>
+        <mesh name="link2_coll" file="mesh/coll/link2.stl"/>
+        <mesh name="link3_coll" file="mesh/coll/link3.stl"/>
+        <mesh name="link4_coll" file="mesh/coll/link4.stl"/>
+        <mesh name="link5_coll" file="mesh/coll/link5.stl"/>
+        <mesh name="link6_coll" file="mesh/coll/link6.stl"/>
+        <mesh name="link7_coll" file="mesh/coll/link7.stl"/>
+        
+    </asset>
+</mujocoinclude>

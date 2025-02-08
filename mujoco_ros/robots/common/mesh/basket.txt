@@ -1,0 +1,5 @@
+type : cube
+Geometry:
+  - inner_cube : 0.8 m
+  - outer_cube : 1.0 m
+

@@ -1,0 +1,17 @@
+<mujocoinclude>
+    <asset>        
+        <texture name="plane" type="2d" builtin="checker" rgb1=".2 .3 .4" rgb2=".1 0.15 0.2" width="256" height="256" mark="cross" markrgb=".8 .8 .8" />
+        <material name="plane" reflectance="0.3" texture="plane" texrepeat="1 1" texuniform="true" />
+
+        <material name="black" rgba=".2 .2 .2 1"/>
+        <material name="white" rgba="1 1 1 1"/>
+        <material name="red" rgba="1 0.072272 0.039546 1"/>
+        <material name="gray" rgba="0.863156 0.863156 0.863157 1"/>
+        <material name="button_green" rgba="0.102241 0.571125 0.102242 1"/>
+        <material name="button_red" rgba="0.520996 0.008023 0.013702 1"/>
+        <material name="button_blue" rgba="0.024157 0.445201 0.737911 1"/>
+        <material name="off_white" rgba="0.901961 0.921569 0.929412 1"/>
+
+    </asset>    
+
+</mujocoinclude>

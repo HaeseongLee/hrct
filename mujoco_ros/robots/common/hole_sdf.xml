@@ -1,0 +1,11 @@
+
+<mujocoinclude>
+        
+    <asset>
+        <mesh name="hole" file="../common/mesh/hole.obj" scale="0.035936632554271805 0.035936632554271805 0.035936632554271805" >
+            <plugin instance="sdf" />
+        </mesh>
+    </asset>
+                    
+</mujocoinclude>
+        

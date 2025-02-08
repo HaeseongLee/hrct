@@ -1,0 +1,27 @@
+<mujocoinclude>
+
+  <actuator>
+      <motor class="fr3" name="fr3_joint1" joint="fr3_joint1" ctrlrange="-87 87"/>
+      <motor class="fr3" name="fr3_joint2" joint="fr3_joint2" ctrlrange="-87 87"/>
+      <motor class="fr3" name="fr3_joint3" joint="fr3_joint3" ctrlrange="-87 87"/>
+      <motor class="fr3" name="fr3_joint4" joint="fr3_joint4" ctrlrange="-87 87"/>
+      <motor class="fr3" name="fr3_joint5" joint="fr3_joint5" ctrlrange="-12 12"/>
+      <motor class="fr3" name="fr3_joint6" joint="fr3_joint6" ctrlrange="-12 12"/>
+      <motor class="fr3" name="fr3_joint7" joint="fr3_joint7" ctrlrange="-12 12"/>
+      <!-- Remap original ctrlrange (0, 0.04) to (0, 255): 0.04 * 100 / 255 = 0.01568627451 -->
+      <!-- <general class="fr3" name="gripper_fr3_joint" tendon="split" forcerange="-100 100" ctrlrange="0 255" gainprm="0.01568627451 0 0" biasprm="0 -100 -10"/> -->
+  </actuator>
+
+    <!-- <actuator>
+    <position class="fr3" name="fr3_joint1" joint="fr3_joint1" kp="4500" kv="450"/>
+    <position class="fr3" name="fr3_joint2" joint="fr3_joint2" kp="4500" kv="450"/>
+    <position class="fr3" name="fr3_joint3" joint="fr3_joint3" kp="3500" kv="350"/>
+    <position class="fr3" name="fr3_joint4" joint="fr3_joint4" kp="3500" kv="350"/>
+    <position class="fr3" name="fr3_joint5" joint="fr3_joint5" kp="2000" kv="200"/>
+    <position class="fr3" name="fr3_joint6" joint="fr3_joint6" kp="2000" kv="200"/>
+    <position class="fr3" name="fr3_joint7" joint="fr3_joint7" kp="2000" kv="200"/>
+  </actuator> -->
+
+
+
+</mujocoinclude>
