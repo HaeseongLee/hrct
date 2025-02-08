@@ -10,7 +10,7 @@ H-Robot Control Tools
 ros2 run mujoco_ros fr3_w_hand
 ```
 
-3. start task manager.
+2. start task manager.
 
    
 ```bash
