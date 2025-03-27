@@ -5,4 +5,6 @@ __pycache__/
 .vscode
 
 mujoco_controller/*.txt
+mujoco_controller/matlab/*
+mujoco_controller/data/*
 mujoco_ros/test/*

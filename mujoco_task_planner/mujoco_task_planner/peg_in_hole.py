@@ -8,19 +8,30 @@ from scipy.spatial.transform import Rotation as R
 import random
 import math
 
+# def position_noise(noise):
+#     x = random.uniform(-1.0, 1.0)
+#     y = random.uniform(-1.0, 1.0)
+#     z = random.uniform(-1.0, 1.0)
+    
+#     magnitude = math.sqrt(x**2 + y**2 + z**2)
+    
+#     x, y, z = (x / magnitude) * noise, (y / magnitude) * noise, (z / magnitude) * noise
+#     return np.array((x, y, z))
+
 def position_noise(noise):
     x = random.uniform(-1.0, 1.0)
     y = random.uniform(-1.0, 1.0)
-    z = random.uniform(-1.0, 1.0)
     
-    magnitude = math.sqrt(x**2 + y**2 + z**2)
+    magnitude = math.sqrt(x**2 + y**2)
     
-    x, y, z = (x / magnitude) * noise, (y / magnitude) * noise, (z / magnitude) * noise
-    return np.array((x, y, z))
+    x, y = (x / magnitude) * noise, (y / magnitude) * noise
+    return np.array((x, y, 0.0))
 
 def quat_noise(noise):
     # noise -> degree
     magnitude = math.radians(noise)
+    # print(magnitude)
+    # magnitude = 10
     
     axis_x = random.uniform(-1.0, 1.0)
     axis_y = random.uniform(-1.0, 1.0)
@@ -29,8 +40,9 @@ def quat_noise(noise):
     norm = math.sqrt(axis_x**2 + axis_y**2 + axis_z**2)
     axis_x, axis_y, axis_z = axis_x / norm, axis_y / norm, axis_z / norm
     
-    angle = random.uniform(0, magnitude)
-    
+    angle = random.uniform(-magnitude, magnitude)
+    # angle = random.uniform(magnitude, magnitude)
+
     qw = math.cos(angle / 2)
     qx = axis_x * math.sin(angle / 2)
     qy = axis_y * math.sin(angle / 2)
@@ -134,7 +146,7 @@ class PegInHole(Node):
         self.get_srv()
 
         # if pose erroer is required
-        # self.add_noise() 
+        self.add_noise() 
 
         # Set/Send goal to Action Server (Robot Controller)
         self.set_goal()        
@@ -153,11 +165,15 @@ class PegInHole(Node):
 
 
     def add_noise(self):
-        p_noise = position_noise(0.0005) # 1mm position error
-        self.peg_pos = self.peg_pos + p_noise
+        # p_noise = position_noise(0.0005) # 1mm position error
+        # self.peg_pos = self.peg_pos + p_noise
 
-        p_noise = position_noise(0.0005) # 1mm position error
+        p_noise = position_noise(0.000) # 1mm position error
         self.hole_pos = self.hole_pos + p_noise
+
+        r_noise = quat_noise(5.0) # 10 degree error
+        r_hole = R.from_quat(self.hole_quat)*R.from_quat(r_noise)        
+        self.hole_quat = r_hole.as_quat()
 
     def set_goal(self):
         self.tm_goal =  np.empty((2, 7))
