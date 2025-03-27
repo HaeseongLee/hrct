@@ -628,4 +628,20 @@ Eigen::MatrixXd leastSquareLinear(const std::vector<double> vec, const int inter
   return coeff_vec;
 }
 
+double eulerAngleError(const Eigen::Vector3d &ref, const Eigen::Vector3d &w)
+{
+  Eigen::Vector3d c; // cross product
+  double i; // inner product
+  double e;
+ 
+  c = ref.cross(w);
+  i = ref.dot(w);
+
+  e = std::atan2(c.norm(), i);
+
+  e = e * 180 / M_PI; // convert to degree
+
+  return e;
+}
+
 } // namespace common_math

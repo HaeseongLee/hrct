@@ -9,6 +9,7 @@
 #include <unsupported/Eigen/MatrixFunctions>
 #include <fstream>
 #include <iostream>
+#include <cmath>
 
 #define GRAVITY 9.80665
 #define MAX_DOF 50U
@@ -191,6 +192,8 @@ Eigen::Matrix3d angleaxis2rot(Eigen::Vector3d axis_angle_vector, double axis_ang
 Eigen::Matrix3d quat2Rot(const Eigen::Vector4d quat);
 
 Eigen::MatrixXd leastSquareLinear(const std::vector<double> vec, const int interval);
+
+double eulerAngleError(const Eigen::Vector3d &ref, const Eigen::Vector3d &w);
 }
 
 

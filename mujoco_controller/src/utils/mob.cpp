@@ -23,15 +23,15 @@ Eigen::VectorXd MomentumObserver::run(const Eigen::Ref<const Eigen::MatrixXd> &M
                                       const Eigen::Ref<const Eigen::MatrixXd> &C,
                                       const Eigen::Ref<const Eigen::VectorXd> &G,
                                       const Eigen::Ref<const Eigen::VectorXd> &tau,
-                                      const Eigen::Ref<const Eigen::VectorXd> &qd)
+                                      const Eigen::Ref<const Eigen::VectorXd> &q_dot)
 {
     Eigen::VectorXd t_ext;
 
-    p_ = M*qd;
+    p_ = M*q_dot;
 
-    beta_ = -C.transpose()*qd + G;
+    beta_ = -C.transpose()*q_dot + G;
 
-    tau_ = tau + r_ - beta_; // integral{tau + C'qd - G + r}
+    tau_ = tau + r_ - beta_; // integral{tau + C'q_dot - G + r}
 
     integral_ += 0.5*dt_*(tau_prev_ + tau_); // to reduce accumulation error
 

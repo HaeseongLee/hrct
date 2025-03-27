@@ -27,6 +27,8 @@ class TaskHandler(Node):
         self.hole_goal = np.empty((7,))
 
         self.flag = False
+        
+        self.srv_sent = False
 
     def handle_callback(self, msg):
         self.goal_received_ = True
@@ -59,21 +61,6 @@ class TaskHandler(Node):
             msg.hole.orientation.w
         ]
 
-        # print(f"Object: {msg.name}")
-        # print(f"  Position  : ({msg.hole.position.x:.3f}, {msg.hole.position.y:.3f}, {msg.hole.position.z:.3f})")
-        # print(f"  Quaternion: ({msg.hole.orientation.x:.3f}, {msg.hole.orientation.y:.3f}, {msg.hole.orientation.z:.3f}, {msg.hole.orientation.w:.3f})")
-
-        # self.cnt += 1
-        # if self.cnt == 1000:
-        #     self.block_id += 1
-        #     self.cnt = 0
-
-    # def update_callback(self):
-    #     if self.goal_received_:
-    #         msg = Int32()
-    #         msg.data = self.block_id
-    #         self.target_pub_.publish(msg)
-
     def is_running(self, cond:bool):
         if self.goal_received_ and cond:
             self.flag = True
@@ -82,22 +69,39 @@ class TaskHandler(Node):
         return self.flag
     
     def send_toggle_attachment(self):
-        ta_req = ToggleAttachment.Request()
-        ta_req.attach = True
-        ta_req.child = "peg"
-        ta_req.parent = "hand_tcp"
+    
+        if not self.srv_sent:
+            self.srv_sent = True
 
-        self.get_logger().info("Send Toggle Attachment Client Request")
-        future = self.ta_client.call_async(ta_req)
-        rclpy.spin_until_future_complete(self, future)
+            ta_req = ToggleAttachment.Request()
+            ta_req.attach = True
+            ta_req.child = "peg"
+            ta_req.parent = "hand_tcp"
 
-        # if self.ta_client.future.done():  # async response
-        if future.done():  # async response
+            self.get_logger().info("Send Toggle Attachment Client Request")            
+            future = self.ta_client.call_async(ta_req)
+            future.add_done_callback(self.response_callback)
 
-            response = self.ta_client.future.result()
-            self.ta_client.get_logger().info(f"Result: {response.success}")
-        
-        return future.result()
+    def send_toggle_detachment(self):
+        if self.srv_sent: # once attachment is activated
+            self.srv_sent = False
+
+            ta_req = ToggleAttachment.Request()
+            ta_req.attach = False
+            ta_req.child = "peg"
+            ta_req.parent = "hand_tcp"
+
+            self.get_logger().info("Send Toggle Dettachment Client Request")            
+            future = self.ta_client.call_async(ta_req)
+            future.add_done_callback(self.response_callback)
+
+    def response_callback(self, future):        
+        try:
+            response = future.result()
+            self.get_logger().info(f"Get Response {response.success}")
+            # self.srv_sent = False
+        except Exception as e:
+            self.get_logger().error(f"Service call failed: {e}")
 
 class Fr3PiHController(Node):
     def __init__(self, urdf_path):
@@ -152,11 +156,17 @@ class Fr3PiHController(Node):
                 r = np.vstack((self.quat2rot(self.th.peg_goal[3:]), self.quat2rot(self.th.hole_goal[3:])))
                 t = np.array((2, 3))
                 ctrl = self.controller.pegInHole(x, r, t)
-                            
+                
+                if(self.controller.set_attach_):       
+                    self.th.send_toggle_attachment()
+                else:
+                    self.th.send_toggle_detachment()
+                
+                    
                 # if(self.controller.next_task_):                    
                     # self.controller.next_task_ = False
 
-            self.controller.saveState()
+            # self.controller.saveState()
 
         return ctrl
     

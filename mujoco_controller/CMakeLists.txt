@@ -34,6 +34,9 @@ add_library(${PROJECT_NAME} SHARED
     src/utils/common_math.cpp    
     src/utils/time_scheduler.cpp
     src/utils/motion_primitives.cpp
+    src/utils/estimator.cpp
+    src/utils/pid.cpp
+    src/utils/mob.cpp
     src/fr3_controller.cpp
 )
 

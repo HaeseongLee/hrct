@@ -2,11 +2,14 @@
 
 #include <Eigen/Dense>
 #include <fstream>
+#include <unordered_map>
 
 #include "robot_model/fr3_updater.h"
 #include "utils/common_math.h"
 #include "utils/time_scheduler.h"
 #include "utils/motion_primitives.h"
+#include "utils/estimator.h"
+#include "utils/pid.h"
 
 using namespace common_math;
 using namespace primitives;
@@ -47,6 +50,9 @@ namespace MjController{
                                          const Eigen::Ref<const Eigen::VectorXd> &durations);
 
             Eigen::VectorXd approach(const double v, const double t_0, const int dir=2);
+            Eigen::VectorXd search(double p, double v, double f, double t, double t_0, double duration);
+            Eigen::VectorXd insert(double f, double t, double t_0);
+
             // Eigen::VectorXd search();
             // Eigen::VectorXd insert();
             Eigen::VectorXd masi(const Eigen::Ref<const Eigen::VectorXd> &x_goal, // goal position
@@ -78,9 +84,18 @@ namespace MjController{
             Eigen::Vector7d q_desired_;
             Eigen::Vector7d q_, qd_; // current joint and velocity
             Eigen::Vector7d tau_d_; // robot torque command
-            Eigen::Vector7d tau_measured_;
-
-            Eigen::Vector6d f_ext_;
+            Eigen::Vector7d tau_d_lpf_; // prevent large transition torque
+            Eigen::Vector7d tau_measured_; // from joint torque sensor
+            Eigen::Vector7d tau_ext_; // external torque (friction + contact)
+            
+            Eigen::Vector3d x_; // end_effector position w.r.t base
+            Eigen::Vector3d x_ee_; // end_effector position w.r.t ee frame
+            Eigen::Vector6d v_, v_lpf_; // end_effector velocity w.r.t base
+            Eigen::Vector6d v_ee_, v_ee_lpf_;
+            Eigen::Matrix3d R_; // end_effector rotation w.r.t base
+            Eigen::Matrix3d R_ee_;
+            Eigen::Vector6d f_ext_, f_ext_lpf_;
+            Eigen::Vector6d f_contact_;
             Eigen::Vector6d f_bias_;
 
             Eigen::Vector2d gw_; //grasp width
@@ -108,8 +123,23 @@ namespace MjController{
             Eigen::VectorXd place_timeline_;           
             TimeScheduler place_sch_;
 
-            std::ofstream save_joint_q{"ros2_ws/src/mujoco_controller/joint_q.txt"};
-            
+            PegInHoleEstimator estimator_ = PegInHoleEstimator(0.0005, 1.0, 3.0, 0.001);
+            std::unordered_map<std::string, int> est_map_ = {
+                {"move", 1}, {"approach", 2}, {"search", 3}, {"insert", 4}, {"homing", 5}};
+
+            PIDController force_pid_ = PIDController(1, 0.001);
+            PIDController insert_pid_ = PIDController(2, 0.001);
+
+
+            std::ofstream save_joint_q{"ros2_ws/src/hrct/mujoco_controller/joint_q.txt"};
+            std::ofstream save_joint_t{"ros2_ws/src/hrct/mujoco_controller/joint_t.txt"};
+            std::ofstream save_task_p{"ros2_ws/src/hrct/mujoco_controller/task_p.txt"};
+            std::ofstream save_task_v{"ros2_ws/src/hrct/mujoco_controller/task_v.txt"};
+            std::ofstream save_f_ext{"ros2_ws/src/hrct/mujoco_controller/f_ext.txt"};
+            std::ofstream save_t_ext{"ros2_ws/src/hrct/mujoco_controller/t_ext.txt"};
+            std::ofstream debug_file{"ros2_ws/src/hrct/mujoco_controller/debug_file.txt"};
+
+
     };
 
 }

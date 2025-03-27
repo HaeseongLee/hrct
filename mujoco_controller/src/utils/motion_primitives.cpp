@@ -29,25 +29,34 @@ namespace primitives
         return p;
     }
 
-    // Eigen::Isometry3d spiral_motion(const double pitch,
-    //                                 const double lin_vel,
-    //                                 const double t,
-    //                                 const double t_0,
-    //                                 const double duration,
-    //                                 double direction)
-    // // Generate spiral trajectory w.r.t the end-effector frame.
-    // // The end-effector will move on the X-Y plane keeping its initial orientation.
-    // // Also, no movement along Z-axis.
-    // {
-    //     Eigen::Isometry3d x;
-    //     Eigen::Vector2d traj;
+    Eigen::Isometry3d spiral(const double p,
+                             const double v,
+                             const double t,
+                             const double t_0,
+                             const double duration)
+    // Generate spiral trajectory w.r.t the end-effector frame.
+    // The end-effector will move on the X-Y plane keeping its initial orientation.
+    // Also, no movement along Z-axis.
+    {
+        Eigen::Isometry3d x;
+        Eigen::Vector2d traj;
 
-    //     x = Eigen::Isometry3d::Identity();
+        x = Eigen::Isometry3d::Identity();
 
-    //     traj = dyros_math::spiral(t, t_0, t_0 + duration, Eigen::Vector2d{0, 0}, lin_vel, pitch, direction);
-    //     x.translation().head<2>() = traj;
+        traj = common_math::spiral(t, t_0, t_0 + duration, Eigen::Vector2d{0, 0}, v, p, 1);
+        x.translation().head<2>() = traj;
 
-    //     return x;
-    // }
+        return x;
+    }
 
+    double push(const double f, const double t, const double t_0, const double duration)
+    // Generate pushing force with cubic
+    // duration : for smoothing, set as a vary small value such as 0.1
+    {
+        double f_cmd;
+
+        f_cmd = common_math::cubic(t, t_0, t_0 + duration, 0.0, f, 0.0, 0.0);
+
+        return f_cmd;
+    }
 }

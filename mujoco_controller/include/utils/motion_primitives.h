@@ -12,21 +12,20 @@ namespace primitives
                                const double t_0,
                                const int dir = 2); // 0 : x-axis, 1 : y-axis, 2 : z-axis
 
-    // Eigen::Isometry3d spiral_motion(const double pitch,
-    //                                 const double lin_vel,
-    //                                 const double t,
-    //                                 const double t_0,
-    //                                 const double duration,
-    //                                 double direction = 1); // 1 = cw, -1 = ccw
+    Eigen::Isometry3d spiral(const double p,
+                             const double v,
+                             const double t,
+                             const double t_0,
+                             const double duration); // 1 = cw, -1 = ccw
 
     // Eigen::Vector2d trapezoid(const double t,
     //                           const double t_0,
     //                           const double v_sat);
 
-    // double push(const double force,
-    //             const double t,
-    //             const double t_0,
-    //             const double duration);
+    double push(const double f,
+                const double t,
+                const double t_0,
+                const double duration);
                 
     // Eigen::Isometry3d hold_pose();
 

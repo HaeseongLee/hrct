@@ -15,13 +15,13 @@ class MomentumObserver{
                             const Eigen::Ref<const Eigen::MatrixXd> &C,
                             const Eigen::Ref<const Eigen::VectorXd> &G,
                             const Eigen::Ref<const Eigen::VectorXd> &tau,
-                            const Eigen::Ref<const Eigen::VectorXd> &qd);
+                            const Eigen::Ref<const Eigen::VectorXd> &q_dot);
 
     private:
         double k_, dt_;
         Eigen::VectorXd p_; // momentum
         Eigen::VectorXd r_; // residual
-        Eigen::VectorXd beta_; // G - C'qd
+        Eigen::VectorXd beta_; // G - C'q_dot
         Eigen::VectorXd tau_, tau_prev_;
         Eigen::VectorXd integral_;
         

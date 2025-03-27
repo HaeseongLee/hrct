@@ -20,6 +20,8 @@
 #include <pinocchio/algorithm/aba.hpp>
 
 
+#include "utils/mob.h"
+
 class Fr3ModelUpdater{
     
     public:
@@ -31,13 +33,15 @@ class Fr3ModelUpdater{
         // void getRobotState(); // get robot state information from Mujoco (ex: joint, angular velocity, ee pose ...)
         void updateModel(const Eigen::Ref<const Eigen::VectorXd> &q,
                          const Eigen::Ref<const Eigen::VectorXd> &qd,
-                         const Eigen::Ref<const Eigen::VectorXd> &gw); // update robot dynimics base on the current observation
+                         const Eigen::Ref<const Eigen::VectorXd> &gw,
+                         const Eigen::Ref<const Eigen::VectorXd> &tau); // update robot dynimics base on the current observation
         void updateKinematics();
         void updateDynamics();
 
         // void setTorque(const Eigen::Matrix<double, 7, 1> &torque_command);
         // void setPosition(const Eigen::Matrix<double, 7, 1> &position_command, bool idle_control = false);
         void setInitialValues();
+        void setTimeStamp(const double t);
         // void setInitialValues(const Eigen::Isometry3d &transform);
         // void setInitialValues(const Eigen::Ref<const Eigen::Ref<const Eigen::VectorXd>> &q);
         // void printState();
@@ -47,6 +51,8 @@ class Fr3ModelUpdater{
 
         pinocchio::Model model_;
         pinocchio::Data data_;
+
+        MomentumObserver mob_{7, 80, 0.001};
         
 
         std::string base_frame_;
@@ -55,20 +61,21 @@ class Fr3ModelUpdater{
         // std::string urdf_path_;
         
         // fr3 parameters --
-        Eigen::Matrix<double, 7, 7> M_; // mass_matrix_;
-        Eigen::Matrix<double, 7, 7> M_inv_; // mass_matrix_;
+        Eigen::Matrix<double, 7, 7> M_; // joint mass_matrix_;
+        Eigen::Matrix<double, 7, 7> M_inv_; // inverse of joint mass_matrix_;
         Eigen::Matrix<double, 6, 6> A_; // lambda_matrix_;
         Eigen::Matrix<double, 7, 1> NLE_; // non-linear effect (corriolis + gravity)
-        // Eigen::Matrix<double, 7, 1> C; // coriolis_;
-        // Eigen::Matrix<double, 7, 1> G; // gravity_;
+        Eigen::Matrix<double, 7, 7> C_; // coriolis_;
+        Eigen::Matrix<double, 7, 1> G_; // gravity_;
 
         Eigen::Matrix<double, 7, 1> q_init_; //initial joint angle; 
         Eigen::Matrix<double, 7, 1> q_; // current joint angle
         Eigen::Matrix<double, 7, 1> qd_; // current angular velocity
         Eigen::Matrix<double, 7, 1> qdd_; // current angluar acceleration
 
-        Eigen::Matrix<double, 7, 1> tau_measured_;
+        Eigen::Matrix<double, 7, 1> tau_measured_; // from torque sensor
         Eigen::Matrix<double, 7, 1> tau_d_; // command torque
+        Eigen::Matrix<double, 7, 1> tau_ext_;
 
         Eigen::Matrix<double, 6, 1> f_ext_;
         Eigen::Matrix<double, 6, 1> f_ee_ext_; // external force w.r.t end-effector frame
@@ -85,7 +92,7 @@ class Fr3ModelUpdater{
 
         Eigen::Matrix<double, 3, 1> p_; // end-effector position
         Eigen::Matrix<double, 3, 3> r_; // roation matrix of end-effector
-        
+
         Eigen::Matrix<double, 6, 1> xd_; // end-effector velocity
         Eigen::Matrix<double, 6, 1> xd_prev_;
         Eigen::Matrix<double, 6, 1> xd_lpf_;
@@ -93,6 +100,7 @@ class Fr3ModelUpdater{
         Eigen::Matrix<double, 2, 1> gw_init_; // gripper initial width
         Eigen::Matrix<double, 2, 1> gw_; // griiper width
         
+        double t_stamp_; // time stamp to set initial time of a given task
 
         // Eigen::Matrix<double, 7, 1> q_limit_center_;
 
