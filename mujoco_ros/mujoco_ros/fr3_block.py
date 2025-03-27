@@ -1,8 +1,11 @@
 import rclpy
 import os
 from mrc import Fr3Controller
-from .gen_block import RandomBoxes
-from .multi_thread import MujocoROSBridge
+from .env.gen_block import RandomBoxes
+from .utils.multi_thread import MujocoROSBridge
+# from .gen_block import RandomBoxes
+# from .multi_thread import MujocoROSBridge
+
 # import time
 
 def main():

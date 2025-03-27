@@ -120,8 +120,6 @@ class MujocoROSBridge(Node):
             self.rc.destroy_node()
 
 
-
-
     def hand_eye_control(self):
         renderer = mujoco.Renderer(self.model, width=self.width, height=self.height)
         hand_eye_id = mujoco.mj_name2id(self.model, mujoco.mjtObj.mjOBJ_CAMERA, self.camera_name)

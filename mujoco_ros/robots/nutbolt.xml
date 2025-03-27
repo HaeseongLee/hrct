@@ -7,10 +7,7 @@
         <config key="radius" value="0.26"/>
       </instance>
     </plugin>
-    <!-- <plugin plugin="mujoco.sdf.bolt"> -->
-      <!-- <instance name="bolt"> -->
-    <plugin plugin="mujoco.sdf.mysdf">
-    <!-- <plugin file="/home/hs_dyros/git/mujoco/build/plugin/sdf/CMakeFiles/sdf.dir/my_sdf.cc.o" plugin="mujoco.sdf.mysdf"> -->
+    <plugin plugin="mujoco.sdf.bolt">
     <instance name="bolt">
         <config key="radius" value="0.255"/>
       </instance>
@@ -44,7 +41,7 @@
   <worldbody>
     <body pos="-0.0012496 0.00329058 0.830362" quat="-0.000212626 0.999996 -0.00200453 0.00185878">
       <joint type="free" damping="30"/>
-      <geom type="sdf" name="nut" mesh="nut" rgba="0.83 0.68 0.4 1">
+      <geom type="sdf" name="nut" mesh="nut" rgba="0.83 0.68 0.4 0.5">
         <plugin instance="nut"/>
       </geom>
     </body>

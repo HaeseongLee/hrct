@@ -1,10 +1,10 @@
 
 <mujocoinclude>
         
-    <body name="peg" pos="0.26 -0.09 0.3559366325542718">
+    <body name="peg" pos="0.51 0.06 0.3533577343758473">
         <joint name="peg_joint" type="free"/>
-        <geom type="cylinder" size="0.01796428806985619 0.035936632554271805" rgba="0.0 0.0 0.545 1" condim="6" friction="1.5 0.1 0.1"
-            density="100" solimp="0.999 0.999 0.001" solref="0.001 2.5"/>
+        <geom type="cylinder" size="0.016678867187923628 0.033357734375847256" rgba="0.0 0.0 0.545 1" condim="6" friction="1.5 0.1 0.1"
+            density="100" solimp="0.999 0.999 0.001" solref="0.001 2.5" margin = "0.001"/>
     </body>
                     
 </mujocoinclude>

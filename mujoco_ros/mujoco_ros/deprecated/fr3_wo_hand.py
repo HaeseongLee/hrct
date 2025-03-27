@@ -1,4 +1,5 @@
 import mujoco
+from mujoco import mjx
 import mujoco.viewer as mj_view
 import time
 import rclpy

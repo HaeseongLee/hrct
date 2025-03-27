@@ -11,8 +11,8 @@ def main():
     rclpy.init()
     node = Node('bowl')
 
-    # xml_path = os.path.join(current_dir, '../robots', 'nutbolt.xml')
-    xml_path = os.path.join(current_dir, '../robots', 'bowl.xml')
+    xml_path = os.path.join(current_dir, '../robots', 'nutbolt.xml')
+    # xml_path = os.path.join(current_dir, '../robots', 'bowl.xml')
     # node.get_logger().info(xml_path)
 
     # # MuJoCo XML 생성 및 로드

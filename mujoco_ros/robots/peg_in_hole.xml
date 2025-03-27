@@ -8,9 +8,12 @@
         </plugin>
     </extension>
 
-    <option sdf_iterations="5" sdf_initpoints="20"/>
-    <!-- <option noslip_iterations="3"> </option> -->
-    <!-- <option><flag multiccd="enable"/> </option> -->
+    <option sdf_iterations="20" sdf_initpoints="40"/>
+
+    <visual>
+        <map force = "0.2"/>
+        <scale forcewidth="0.005" contactwidth="0.01" contactheight="0.01"/>
+    </visual>
 
     <!--Hole sdf settings-->
     <include file="common/hole_sdf.xml"/>
@@ -25,17 +28,24 @@
 
     <worldbody>
         <include file="common/scene.xml" />    
+
         <include file="fr3/fr3_hand_urdf.xml" />   
 
         <body pos="0.6 0 0.3" euler="0 0 1.5707963267948966">
             <include file="common/table.xml"/>
         </body> 
 
-        <camera name="top_down_cam" pos="0.8 0.0 0.8" euler="0 0.7854 1.570796326794897" mode="fixed" fovy="74.3"/>
-        <geom type="box" pos="0.8 0.0 0.8" euler="0 0.7854 1.570796326794897" size ="0.09 0.025 0.025"/>
-
         <include file="common/hole.xml" />    
         <include file="common/peg.xml" />   
 
+        <camera name="top_down_cam" pos="0.8 0.0 0.8" euler="0 0.7854 1.570796326794897" mode="fixed" fovy="74.3"/>
+        <geom type="box" pos="0.8 0.0 0.8" euler="0 0.7854 1.570796326794897" size ="0.09 0.025 0.025"/>
+
     </worldbody>
+
+    <equality>
+        <weld name="grasp" body1="hand_tcp" body2="peg" relpose="0 0 0 1 0 0 0" torquescale="0.1"
+        solimp="0.999 0.999 0.001" solref="0.001 2.5"/>
+    </equality>
+
 </mujoco>

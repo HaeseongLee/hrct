@@ -1,8 +1,8 @@
 
 <mujocoinclude>
         
-    <body name="hole" pos="0.46 -0.04 0.3379683162771359" euler="1.570796326794897 0 0">
-        <geom name="hole" type="sdf" mesh="hole" rgba="0.94 0.50 0.50 1.0">
+    <body name="hole" pos="0.47 0.16 0.3366788671879236" euler="1.570796326794897 0 0">
+        <geom name="hole" type="sdf" mesh="hole" rgba="0.94 0.50 0.50 0.5">
             <plugin instance="sdf"/>
         </geom>
     </body>       

@@ -100,7 +100,7 @@ class RandomBoxes:
         xml_content += """            
 </mujocoinclude>
         """
-        self.save_root = os.path.join(self.current_root, "../robots/common")
+        self.save_root = os.path.join(self.current_root, "../../robots/common")
         # Write to the specified file
         with open(os.path.join(self.save_root, filename), "w") as f:
             f.write(xml_content)
@@ -114,7 +114,7 @@ def main():
     # rclpy.init()
     
     current_dir = os.path.dirname(os.path.realpath(__file__))    
-    xml_path = os.path.join(current_dir, '../robots', 'picking_block.xml')
+    xml_path = os.path.join(current_dir, '../../robots', 'picking_block.xml')
 
 
     print(xml_path)

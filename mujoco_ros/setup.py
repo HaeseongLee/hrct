@@ -35,10 +35,9 @@ setup(
     entry_points={
         'console_scripts': [
             'mujoco_test = mujoco_ros.test:main',
-            'fr3_wo_hand = mujoco_ros.fr3_wo_hand:main',
-            'franka_hand = mujoco_ros.franka_hand:main',
-            'fr3_w_hand = mujoco_ros.fr3_w_hand:main',
+            'fr3_block = mujoco_ros.fr3_block:main',
             'fr3_pih = mujoco_ros.fr3_pih:main',
+            'multi_fr3_pih = mujoco_ros.multi_fr3_pih:main',
 
         ],
     },

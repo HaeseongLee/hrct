@@ -16,8 +16,8 @@ class RandomPegHole:
         
         self.current_root = os.path.dirname(os.path.realpath(__file__))
         
-        self.clearance = random.uniform(0.0, 0.00001)
-        # self.clearance = 0.0
+        # self.clearance = random.uniform(-0.0005, 0.0)
+        self.clearance = 0.0
 
         self.s = self.generate_random_size()
         self.generate_random_position()
@@ -69,7 +69,7 @@ class RandomPegHole:
         xml_content += """            
 </mujocoinclude>
         """
-        self.save_root = os.path.join(self.current_root, "../robots/common")
+        self.save_root = os.path.join(self.current_root, "../../robots/common")
         # Write to the specified file
         with open(os.path.join(self.save_root, filename), "w") as f:
             f.write(xml_content)
@@ -82,14 +82,14 @@ class RandomPegHole:
         """        
         xml_content += f"""
     <body name="hole" pos="{self.hole[0]} {self.hole[1]} {self.hole[2] + self.s/2}" euler="1.570796326794897 0 0">
-        <geom name="hole" type="sdf" mesh="hole" rgba="0.94 0.50 0.50 1.0">
+        <geom name="hole" type="sdf" mesh="hole" rgba="0.94 0.50 0.50 0.5">
             <plugin instance="sdf"/>
         </geom>
     </body>       
 </mujocoinclude>
         """
 
-        self.save_root = os.path.join(self.current_root, "../robots/common")
+        self.save_root = os.path.join(self.current_root, "../../robots/common")
         # Write to the specified file
         with open(os.path.join(self.save_root, filename), "w") as f:
             f.write(xml_content)
@@ -104,14 +104,14 @@ class RandomPegHole:
     <body name="peg" pos="{self.peg[0]} {self.peg[1]} {self.peg[2] + self.s}">
         <joint name="peg_joint" type="free"/>
         <geom type="cylinder" size="{self.s/2.0 - self.clearance} {self.s}" rgba="0.0 0.0 0.545 1" condim="6" friction="1.5 0.1 0.1"
-            density="100" solimp="0.999 0.999 0.001" solref="0.001 2.5"/>
+            density="100" solimp="0.999 0.999 0.001" solref="0.001 2.5" margin = "0.001"/>
     </body>
         """
         xml_content += """            
 </mujocoinclude>
         """
 
-        self.save_root = os.path.join(self.current_root, "../robots/common")
+        self.save_root = os.path.join(self.current_root, "../../robots/common")
         # Write to the specified file
         with open(os.path.join(self.save_root, filename), "w") as f:
             f.write(xml_content)

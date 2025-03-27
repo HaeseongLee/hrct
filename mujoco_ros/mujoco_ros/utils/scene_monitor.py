@@ -14,26 +14,48 @@ class SceneMonitor(Node):
         self.data = data  # mujoco data
 
         self.object_types = [
-            mujoco.mjtObj.mjOBJ_BODY,
-            mujoco.mjtObj.mjOBJ_JOINT,
-            mujoco.mjtObj.mjOBJ_GEOM,
-            mujoco.mjtObj.mjOBJ_SITE,
-            mujoco.mjtObj.mjOBJ_CAMERA,
-            mujoco.mjtObj.mjOBJ_LIGHT,
-            mujoco.mjtObj.mjOBJ_TENDON,
-            mujoco.mjtObj.mjOBJ_ACTUATOR,
-            mujoco.mjtObj.mjOBJ_SENSOR
+            mujoco.mjtObj.mjOBJ_UNKNOWN,       
+            mujoco.mjtObj.mjOBJ_BODY,                     
+            mujoco.mjtObj.mjOBJ_XBODY,                    
+            mujoco.mjtObj.mjOBJ_JOINT,                    
+            mujoco.mjtObj.mjOBJ_DOF,                      
+            mujoco.mjtObj.mjOBJ_GEOM,                     
+            mujoco.mjtObj.mjOBJ_SITE,                     
+            mujoco.mjtObj.mjOBJ_CAMERA,                   
+            mujoco.mjtObj.mjOBJ_LIGHT,                    
+            mujoco.mjtObj.mjOBJ_FLEX,                     
+            mujoco.mjtObj.mjOBJ_MESH,                     
+            mujoco.mjtObj.mjOBJ_SKIN,                     
+            mujoco.mjtObj.mjOBJ_HFIELD,                   
+            mujoco.mjtObj.mjOBJ_TEXTURE,                  
+            mujoco.mjtObj.mjOBJ_MATERIAL,                   
+            mujoco.mjtObj.mjOBJ_PAIR,                        
+            mujoco.mjtObj.mjOBJ_EXCLUDE,                    
+            mujoco.mjtObj.mjOBJ_EQUALITY,                  
+            mujoco.mjtObj.mjOBJ_TENDON,                   
+            mujoco.mjtObj.mjOBJ_ACTUATOR,                 
+            mujoco.mjtObj.mjOBJ_SENSOR,
+            mujoco.mjtObj.mjOBJ_NUMERIC,                  
+            mujoco.mjtObj.mjOBJ_TEXT,                     
+            mujoco.mjtObj.mjOBJ_TUPLE,                    
+            mujoco.mjtObj.mjOBJ_KEY,                      
+            mujoco.mjtObj.mjOBJ_PLUGIN,  
         ]
 
         self.bs_srv = self.create_service(BlockSortingObs, "block_observation", self.block_sorting_callback)
         self.ph_srv = self.create_service(PegInHoleObs, "pih_observation", self.peg_in_hole_callback)
         self.ta_srv = self.create_service(ToggleAttachment, "toggle_attachment", self.attachment_callback)
+
+        self.offConstraint()
+
         self.get_logger().info("Scene Monitor is ready")
 
         # self.scene = mujoco.MjvScene(self.model, maxgeom = 1000)
         # self.option = mujoco.MjvOption()
         # self.pert = mujoco.MjvPerturb()
         # self.cam = mujoco.MjvCamera()
+
+
 
 
     def getObjectInfo(self, obj_id):
@@ -47,7 +69,7 @@ class SceneMonitor(Node):
             for obj_id in range(self.model.nbody if obj_type == mujoco.mjtObj.mjOBJ_BODY else self.model.ngeom):
                 name = mujoco.mj_id2name(self.model, obj_type, obj_id)
                 if name:
-                    print(f"  - {name}")
+                    print(f"  - {name}({obj_id})")
 
     def getTargetObject(self):
         # The target name is supposed to be "box_xx"
@@ -71,54 +93,60 @@ class SceneMonitor(Node):
             sensor_id = mujoco.mj_name2id(self.model, mujoco.mjtObj.mjOBJ_SENSOR, name)  # 센서 ID 가져오기
             print(f"Sensor Name: {name}, Sensor ID: {sensor_id}")
 
-    def attachObject(self, child, parent):
+    def offConstraint(self):
+        for i in range(self.model.eq_type.shape[0]):
+            if self.model.eq_type[i] == mujoco.mjtEq.mjEQ_WELD:
+                # print(self.model.eq_type[i])
+                # print(self.model.equality(i).name)
+                id = self.model.equality(i).id
+                self.data.eq_active[id] = 0
 
-        eq_id = None
+    # Only Consider pre-defined constraint!!
+    def attachObject(self, child, parent):
+        
         child_id = self.model.body(child).id
         parent_id = self.model.body(parent).id
 
         # check the constraint have been declared
-        for i in range(self.model.eq_data.shape[0]):  
+        for i in range(self.model.eq_type.shape[0]):
             if self.model.eq_type[i] == mujoco.mjtEq.mjEQ_WELD:
-                if (self.model.eq_obj1id[i] == parent_id and self.model.eq_obj2id[i] == child_id) or \
-                (self.model.eq_obj1id[i] == child_id and self.model.eq_obj2id[i] == parent_id):
-                    eq_id = i
-                    break  # if the constraint already exist, save it
+                if (self.model.eq_obj1id[i] == parent_id and self.model.eq_obj2id[i] == child_id):
+                    self.get_logger().info(self.model.equality(i).name)
+                    id = self.model.equality(i).id
+
+                    # update current relative pose
+                    # rel_pos = self.data.xpos[parent_id] - self.data.xpos[child_id]
+                    rel_pos = self.data.xpos[child_id] - self.data.xpos[parent_id]
+
+                    child_rot = R.from_quat(self.data.xquat[child_id])
+                    parent_rot = R.from_quat(self.data.xquat[parent_id])
+
+                    relative_rot = parent_rot.inv() * child_rot  
+                    # relative_rot = parent_rot.inv() * child_rot  
+                    rel_quat = relative_rot.as_quat()
+
+                    self.model.eq_data[id][3:6] = [rel_pos[0], rel_pos[1], -rel_pos[2]]
+                    # self.model.eq_data[id][3:6] = [0.0, 0.0, -rel_pos[2]]
+
+                    # self.model.eq_data[id][3:6] = [0.0, 0.0, 0.02]
+                    self.model.eq_data[id][6:10] = rel_quat#[1.0, 0.0, 0.0, 0.0]
+                    
+                    self.data.eq_active[id] = 1   
+
+                    break 
             
-        if eq_id is not None:
-                self.model.eq_active0[eq_id] = 1 # active the constraint
-                print(f"Reactivating existing weld constraint (ID: {eq_id})")
-        else:
-            eq_id = len(self.model.eq_obj1id) - 1  # new constraint ID
-            self.model.eq_type[eq_id] = mujoco.mjtEq.mjEQ_WELD
-            self.model.eq_obj1id[eq_id] = parent_id
-            self.model.eq_obj2id[eq_id] = child_id
-
-            # 상대 위치 및 회전 계산
-            rel_pos = self.data.xpos[child_id] - self.data.xpos[parent_id]
-
-            # scipy.spatial.transform : quat 2 rot
-            child_rot = R.from_quat(self.data.xquat[child_id])
-            parent_rot = R.from_quat(self.data.xquat[parent_id])
-
-            relative_rot = child_rot.inv() * parent_rot  # ex) W_R_E.inv() * W_R_peg = E_R_peg
-            rel_quat = relative_rot.as_quat()
-
-            # eq_data에 적용 (위치 3개 + 회전 quaternion 4개)
-            self.model.eq_data[eq_id, :3] = rel_pos
-            self.model.eq_data[eq_id, 3:7] = rel_quat
-
-            print(f"New weld constraint created (ID: {eq_id})")
-
     def detachObject(self, child, parent):
         child_id = self.model.body(child).id
         parent_id = self.model.body(parent).id
    
-        for i in range(self.model.eq_data.shape[0]):  # checl all constraints 
-            if self.model.eq_type[i] == mujoco.mjtEq.mjEQ_WELD:  # whether Weld constraint or not
-                if (self.model.eq_obj1id[i] == child_id and self.model.eq_obj2id[i] == parent_id) or \
-                (self.model.eq_obj1id[i] == parent_id and self.model.eq_obj2id[i] == child_id):
-                    self.model.eq_active[i] = 0  # inactive
+        # check the constraint have been declared
+        for i in range(self.model.eq_type.shape[0]):
+            if self.model.eq_type[i] == mujoco.mjtEq.mjEQ_WELD:
+                if (self.model.eq_obj1id[i] == parent_id and self.model.eq_obj2id[i] == child_id):
+                    self.get_logger().info(self.model.equality(i).name)
+                    id = self.model.equality(i).id
+                    self.data.eq_active[id] = 0
+                    break
 
     def block_sorting_callback(self, req, res):        
         self.get_logger().info("Get Client Request")
@@ -161,7 +189,7 @@ class SceneMonitor(Node):
         hole.orientation = Quaternion(x=q[0], y=q[1], z=q[2], w=q[3])
 
         p, q = self.getObjectInfo(peg_id)
-        offset = 0.01
+        offset = 0.015
         peg.position = Point(x=p[0], y=p[1], z=p[2] + offset)
         peg.orientation = Quaternion(x=q[0], y=q[1], z=q[2], w=q[3])
         
@@ -171,15 +199,14 @@ class SceneMonitor(Node):
         return res
     
     def attachment_callback(self, req, res):       
-
-        self.get_logger().info("Toggle Attachment Request From Client")
-
         child = req.child
         parent = req.parent
 
         if req.attach:
+            self.get_logger().info("Toggle Attachment Request From Client")
             self.attachObject(child, parent)
         else:
+            self.get_logger().info("Toggle Detachment Request From Client")
             self.detachObject(child, parent)
 
         res.success = True

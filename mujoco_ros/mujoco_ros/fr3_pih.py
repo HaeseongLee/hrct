@@ -1,8 +1,8 @@
 import rclpy
 import os
 from mrc import Fr3PiHController
-from .gen_peg_in_hole import RandomPegHole
-from .multi_thread import MujocoROSBridge
+from .env.gen_peg_in_hole import RandomPegHole
+from .utils.multi_thread import MujocoROSBridge
 # import time
 
 def main():
