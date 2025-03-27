@@ -4,4 +4,5 @@ __pycache__/
 
 .vscode
 
-
+mujoco_controller/*.txt
+mujoco_ros/test/*
