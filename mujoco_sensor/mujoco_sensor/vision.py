@@ -96,12 +96,13 @@ def main():
     start_time = time.time()
     try:
         # while time.time() - start_time < 2.0:  # 2초 동안 실행
-        # while rclpy.ok():
-        executor.spin()
+        while rclpy.ok():
+        # executor.spin()
             # executor.spin_once(timeout_sec=0.01)  # 0.01초마다 한 번씩 실행
-            # rclpy.spin_once(hc, timeout_sec=0.01)
-            # rclpy.spin_once(tc, timeout_sec=0.01)
-            # tc.display()
+            rclpy.spin_once(hc, timeout_sec=0.01)
+            rclpy.spin_once(tc, timeout_sec=0.01)
+            hc.display()
+            tc.display()
 
         # executor.spin()  # 멀티스레드 방식으로 실행
     except KeyboardInterrupt:
