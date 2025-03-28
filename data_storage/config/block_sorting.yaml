@@ -1,0 +1,8 @@
+robot_state:
+  - /home/hs_dyros/ros2_ws/src/mujoco_controller/joint_q.txt
+
+camera_state:
+  - /home/hs_dyros/ros2_ws/src/mujoco_sensor/images/hand_eye
+  - /home/hs_dyros/ros2_ws/src/mujoco_sensor/images/top_down_cam
+
+save_directory: /home/hs_dyros/ros2_ws/src/data_storage/data

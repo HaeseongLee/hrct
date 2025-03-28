@@ -1,4 +1,5 @@
-data_storage
+data_storage/data/*
+
 __pycache__/
 *.pyc
 
