@@ -195,10 +195,10 @@ class PegInHole(Node):
 
 def main():
     try:
-        with rclpy.init():            
-            ph = PegInHole()    
-            ph.start_peg_in_hole()            
-            rclpy.spin(ph.tm)
+        rclpy.init()
+        ph = PegInHole()    
+        ph.start_peg_in_hole()            
+        rclpy.spin(ph.tm)
 
     except (KeyboardInterrupt):
         ph.destroy_node()

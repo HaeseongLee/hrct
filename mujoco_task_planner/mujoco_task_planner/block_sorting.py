@@ -267,10 +267,10 @@ class BlockSorting(Node):
 
 def main():
     try:
-        with rclpy.init():            
-            bs = BlockSorting()    
-            bs.start_block_sorting()            
-            rclpy.spin(bs.tm)
+        rclpy.init()
+        bs = BlockSorting()    
+        bs.start_block_sorting()            
+        rclpy.spin(bs.tm)
 
     except (KeyboardInterrupt, ExternalShutdownException):
         pass
