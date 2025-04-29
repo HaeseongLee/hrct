@@ -72,6 +72,8 @@ namespace MjController{
             bool set_attach_;
 
         private:
+            Eigen::VectorXd getDesiredPose(const Eigen::Ref<const Eigen::VectorXd> &x_goal,
+                                           const Eigen::Ref<const Eigen::MatrixXd> &r_goal);
 
             Fr3ModelUpdater model_;
 
@@ -94,9 +96,10 @@ namespace MjController{
             Eigen::Vector6d v_ee_, v_ee_lpf_;
             Eigen::Matrix3d R_; // end_effector rotation w.r.t base
             Eigen::Matrix3d R_ee_;
-            Eigen::Vector6d f_ext_, f_ext_lpf_;
+            Eigen::Vector6d f_ext_init_, f_ext_, f_ext_lpf_;
             Eigen::Vector6d f_contact_;
             Eigen::Vector6d f_bias_;
+            Eigen::Vector6d pose_d_;
 
             Eigen::Vector2d gw_; //grasp width
             Eigen::Vector2d gw_init_;       
@@ -127,7 +130,7 @@ namespace MjController{
             std::unordered_map<std::string, int> est_map_ = {
                 {"move", 1}, {"approach", 2}, {"search", 3}, {"insert", 4}, {"homing", 5}};
 
-            PIDController force_pid_ = PIDController(1, 0.001);
+            PIDController search_pid_ = PIDController(1, 0.001);
             PIDController insert_pid_ = PIDController(2, 0.001);
 
 
@@ -139,6 +142,9 @@ namespace MjController{
             std::ofstream save_t_ext{"ros2_ws/src/hrct/mujoco_controller/t_ext.txt"};
             std::ofstream debug_file{"ros2_ws/src/hrct/mujoco_controller/debug_file.txt"};
 
+            std::ofstream save_robot_cmd{"ros2_ws/src/hrct/mujoco_controller/data/imitation/robot_cmd.txt"};
+            std::ofstream save_robot_obs{"ros2_ws/src/hrct/mujoco_controller/data/imitation/robot_obs.txt"};
+            
 
     };
 

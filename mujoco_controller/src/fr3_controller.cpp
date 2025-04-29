@@ -26,8 +26,8 @@ namespace MjController{
         place_sch_.setScheduler("place", place_task_, place_periods_);
 
 
-        force_pid_.setGains(1.0, 0.001, 0.0);
-        insert_pid_.setGains(1.0, 0.001, 0.0);
+        search_pid_.setGains(0.1, 0.001, 0.0);
+        insert_pid_.setGains(0.1, 0.001, 0.0);
 
         next_task_ = false;
         set_attach_ = false;
@@ -62,7 +62,8 @@ namespace MjController{
         q_ = q.head<7>();
         qd_ = qd.head<7>();
 
-        tau_measured_ = tau;
+        tau_measured_ = tau;        
+
         f_ext_ = ft;
         
         double f_cut = 30;
@@ -91,20 +92,19 @@ namespace MjController{
     Eigen::VectorXd Fr3Controller::setIdleConfig(const Eigen::Ref<const Eigen::Vector2d> &time)
     {
         Eigen::Vector7d tau_d;
-
-        // std::cout<<"start time: "<<time(0)<<std::endl;
-        // std::cout<<"end   time: "<<time(1)<<std::endl;
-        // std::cout<<"q init : "<<q_init_.transpose()<<std::endl;
-        // std::cout<<"q idle : "<<q_idle_.transpose()<<std::endl;
-        
+   
         for(int i = 0; i < dof_; i++){
             q_desired_(i) = cubic(t_, time(0), time(1), model_.q_init_(i), q_idle_(i), 0.0, 0.0);
         }
 
+
         tau_d = 500*(q_desired_ - q_) - 10 * qd_;
         tau_d += model_.NLE_;
 
+        pose_d_ = getDesiredPose(x_, R_);
+        
         return tau_d;
+
     }
 
     Eigen::VectorXd Fr3Controller::gripperOpen(const double target_width, const Eigen::Ref<const Eigen::Vector2d> &time)
@@ -186,7 +186,7 @@ namespace MjController{
         tau_nll = 4.0*(model_.q_init_ - q_) - 0.1*(qd_);
         tau_d = model_.J_.transpose() * model_.A_ * f + model_.NLE_ + model_.N_ * tau_nll;
         
-        // debug_file << xd.transpose()<<" "<<x_.transpose()<<std::endl;
+        // pose_d_ = Fr3Controller::getDesiredPose(xd, Rd);
 
         return tau_d;
     }
@@ -221,17 +221,12 @@ namespace MjController{
             pick_timeline_ = pick_sch_.getTimeline();
 
             std::cout<<"Picking ..."<<std::endl;
-            // std::cout<<"\nTime: "<<t_<<std::endl;
-            // std::cout<<"Curr: "<<pick_sch_.getCurrentTask()<<std::endl;
         }
 
         std::string task = pick_sch_.scheduling(t_);
 
         if(pick_sch_.triggerTransition()){
             model_.setInitialValues();
-            // std::cout<<"\nTime: "<<t_<<std::endl;
-            // std::cout<<"Prev: "<<pick_sch_.getPrevTask()<<std::endl;
-            // std::cout<<"Curr: "<<pick_sch_.getCurrentTask()<<std::endl;
         }
 
         if(task == "reach"){
@@ -317,9 +312,6 @@ namespace MjController{
 
         if(place_sch_.triggerTransition()){
             model_.setInitialValues();
-            // std::cout<<"\nTime: "<<t_<<std::endl;
-            // std::cout<<"Prev: "<<pick_sch_.getPrevTask()<<std::endl;
-            // std::cout<<"Curr: "<<pick_sch_.getCurrentTask()<<std::endl;
         }
 
         if(task == "reach"){
@@ -433,12 +425,14 @@ namespace MjController{
         tau_nll = 4.0*(model_.q_init_ - q_) - 0.1*(qd_);
         tau_d = model_.J_.transpose() * model_.A_ * f + model_.NLE_ + model_.N_ * tau_nll;
         
+        pose_d_ = Fr3Controller::getDesiredPose(x_d, R_d);
+
         return tau_d;
     }
 
     Eigen::VectorXd Fr3Controller::search(double p, double v, double f, double t, double t_0, double duration)
     {
-        Eigen::Isometry3d transform_ee_d, transform_ee;
+        Eigen::Isometry3d transform_ee_d, transform_ee, transform_d;
         Eigen::Matrix3d R_init, R_ee_d;
         Eigen::Vector3d x_ee_d;
         Eigen::Vector3d v_ee, w_ee;
@@ -452,7 +446,8 @@ namespace MjController{
         // Generation motion-related input -------------------------------------------------------------
         transform_ee_d = primitives::spiral(p, v, t, t_0, duration); // w.r.t end-effector
         transform_ee = model_.initial_transform_.inverse()*model_.transform_;
-        
+        transform_d = model_.initial_transform_*transform_ee_d;
+
         x_ee_d = transform_ee_d.translation();
         x_ee_ = transform_ee.translation();
         v_ee = R_init.inverse()*model_.xd_.head<3>();
@@ -465,17 +460,14 @@ namespace MjController{
         v_ee_lpf_.tail<3>() = R_init.inverse()*v_lpf_.tail<3>();
 
         f_ee_m.head<3>() = 1200.0*(x_ee_d - x_ee_) + 40.0*(-v_ee_lpf_.head<3>());
-        // f_ee_m(2) = 0.0; // no motion along z-axis (assembly direction)
+        f_ee_m(2) = 0.0; // no motion along z-axis (assembly direction)
         f_ee_m.tail<3>() = 1000.0* (-common_math::getPhi(R_ee_, R_ee_d)) + 50.0*(-v_ee_lpf_.tail<3>());
         // ---------------------------------------------------------------------------------------------
 
         // Generation force-related input -------------------------------------------------------------
         f_ee_a.setZero();
         double f_ref = primitives::push(f, t, t_0, 0.5); // only generate force along z-aixs (assembly direction)
-        // f_ee_a(2) = f_ref + 0.0*(f_ref - (-f_ext_(2))) + 20.0 *(-v_ee(2)); // damping effect
-        // f_ee_a(2) = f_ref + 10.0*(f_ref - f_contact(2)) + 40.0 *(-v_ee_lpf_(2));
-        f_ee_a(2) = f_ref + force_pid_.compute(f_ref, f_contact_(2)) + 40.0 *( -v_ee_lpf_(2));
-        // f_ee_a(2) = f_ref + 40.0 *(-v_ee_lpf_(2));
+        f_ee_a(2) = f_ref + search_pid_.compute(f_ref, f_contact_(2)) + 100.0 *( -v_ee_lpf_(2));
 
         // ---------------------------------------------------------------------------------------------
 
@@ -488,13 +480,15 @@ namespace MjController{
         tau_nll = 4.0*(model_.q_init_ - model_.q_) - 0.1*(model_.qd_);
         tau_d = model_.J_.transpose() * (model_.A_ * f_star + f_d)+ model_.NLE_ + model_.N_ * tau_nll;
 
+        pose_d_ = Fr3Controller::getDesiredPose(transform_d.translation(), R_init);
+
         return tau_d;
     }
 
     Eigen::VectorXd Fr3Controller::insert(double f, double t, double t_0)
     {        
-        Eigen::Isometry3d transform_ee_d, transform_ee;
-        Eigen::Matrix3d R_init, R_ee_d;
+        Eigen::Isometry3d transform_ee_d, transform_ee, transform_d;
+        Eigen::Matrix3d R_init, R_ee_d, R_goal;
         Eigen::Vector3d x_ee_d;
         Eigen::Vector6d f_ee_m; // motion w.r.t base frame
         Eigen::Vector6d f_ref, f_ee_a; // active force w.r.t base frame
@@ -504,6 +498,7 @@ namespace MjController{
 
         R_init = model_.initial_transform_.linear(); // initial rotation w.r.t base frame
         transform_ee = model_.initial_transform_.inverse()*model_.transform_;
+        transform_d = model_.initial_transform_*transform_ee_d;
 
         x_ee_d.setZero();
         x_ee_ = transform_ee.translation();
@@ -516,39 +511,29 @@ namespace MjController{
         v_ee_lpf_.head<3>() = R_init.inverse()*v_lpf_.head<3>();
         v_ee_lpf_.tail<3>() = R_init.inverse()*v_lpf_.tail<3>();
 
-        R_ee_d = Eigen::Matrix3d::Identity(); // keep the initial orientation w.r.t ee_frame
+        R_goal << 1.0, 0.0, 0.0, 0.0, -1.0, 0.0, 0.0, 0.0, -1.0; //desired rotation matrix w.r.t base frame        
+        R_ee_d = common_math::rotationCubic(t_, t_0, t_0 + 3.0, Eigen::Matrix3d::Identity(), R_init.inverse()*R_goal);
+
+        // R_ee_d = Eigen::Matrix3d::Identity(); // keep the initial orientation w.r.t ee_frame
         R_ee_ = transform_ee.linear();
         w_ee = R_init.inverse()*model_.xd_.tail<3>();
 
-        // f_ee_m.setZero();
-        // f_ee_m.tail<3>().setZero();
         f_ee_m.head<3>() = 150.0*(x_ee_d - x_ee_) + 10.0*(-v_ee_lpf_.head<3>());
         f_ee_m(2) = 0.0; // no motion along z-axis (assembly direction)
         f_ee_m.tail<3>() = 150.0* (-common_math::getPhi(R_ee_, R_ee_d)) + 10.0*(-v_ee_lpf_.tail<3>());
-        // f_ee_m(3) = 0.0;
-        // f_ee_m(4) = 0.0;
-        
+       
 
         // Generation force-related input -------------------------------------------------------------
         f_ee_a.setZero();
         f_ref.setZero();
         f_ref(2) = primitives::push(f, t, t_0, 0.1); // only generate force along z-aixs (assembly direction)
 
-        // f_ee_a.head<2>() = f_ref.head<2>() + 0.5*(f_ref.head<2>()- f_contact_.head<2>()) + 40.0 *(-v_ee_lpf_.head<2>());
-        // f_ee_a.head<2>() = f_ref.head<2>() + insert_pid_.compute(f_ref.head<2>(), f_contact_.head<2>()) + 40.0 *(-v_ee_lpf_.head<2>());
-        f_ee_a(2) = f_ref(2) + 1.0*(f_ref(2) - f_contact_(2)) + 40.0 *(-v_ee_lpf_(2));
-
-        // f_ee_a.tail<3>() = f_ref.tail<3>() + 0.1*(f_ref.tail<3>()- f_contact_.tail<3>()) + 0.1 *(-v_ee_lpf_.tail<3>());
-        // f_ee_a(5) = 0.0;
-        // ---------------------------------------------------------------------------------------------
-
-        debug_file<< f_ee_a.transpose()<<" "<< f_contact_.transpose()<<std::endl;
-
+        // f_ee_a(2) = f_ref(2) + 1.0*(f_ref(2) - f_contact_(2)) + 40.0 *(-v_ee_lpf_(2));
+        f_ee_a(2) = f_ref(2) + insert_pid_.compute(f_ref(2), f_contact_(2)) + 100.0 *( -v_ee_lpf_(2));
 
         f_star.head<3>() = R_init*f_ee_m.head<3>();
         f_star.tail<3>() = R_init*f_ee_m.tail<3>();
         // f_star.setZero();
-
 
         f_d.setZero();
         f_d.head<3>() = R_init*f_ee_a.head<3>();
@@ -557,6 +542,8 @@ namespace MjController{
         tau_nll = 4.0*(model_.q_init_ - model_.q_) - 0.1*(model_.qd_);
         tau_d = model_.J_.transpose() * (model_.A_ * f_star + f_d)+ model_.NLE_ + model_.N_ * tau_nll;
         // tau_d = tau_nll;
+
+        pose_d_ = Fr3Controller::getDesiredPose(transform_d.translation(), R_init);
 
         return tau_d;
     }
@@ -592,10 +579,10 @@ namespace MjController{
         std::string current_task = estimator_.getTargetTask();
 
         double approach_v = 0.02;
-        double spiral_p = 0.002; // 5 mm
+        double spiral_p = 0.001; // 5 mm
         double spiral_v = 0.01; // 10 mm/s 
-        double spiral_f = 0.8; // 1 N
-        double insert_f = 0.8;
+        double spiral_f = 0.5; // 1 N
+        double insert_f = 0.5;
 
 
         f_contact_ = f_ext_lpf_ - f_bias_;
@@ -708,13 +695,16 @@ namespace MjController{
         ctrl.head<7>() = tau_d_lpf_;
         ctrl.tail<1>() = gf_.head<1>();
 
-        save_f_ext<<t_<<" "<<est_map_[current_task]<<" "<< f_contact_.transpose()<<std::endl;
+        // save_f_ext<<t_<<" "<<est_map_[current_task]<<" "<< f_contact_.transpose()<<std::endl;
 
-        save_task_p<<est_map_[current_task]<<" "<<x_.transpose()<<" "<<x_ee_.transpose()<<std::endl;
-        save_task_v<<est_map_[current_task]<<" "<<v_lpf_.head<3>().transpose()<<" "<<v_ee_lpf_.head<3>().transpose()<<std::endl;
-        save_joint_t<<t_<<" "<<est_map_[current_task]<<" "<< (tau_measured_ - model_.G_).transpose()<<" "<<tau_ext_.transpose()<<std::endl;
+        // save_task_p<<est_map_[current_task]<<" "<<x_.transpose()<<" "<<x_ee_.transpose()<<std::endl;
+        // save_task_v<<est_map_[current_task]<<" "<<v_lpf_.head<3>().transpose()<<" "<<v_ee_lpf_.head<3>().transpose()<<std::endl;
+        // save_joint_t<<t_<<" "<<est_map_[current_task]<<" "<< (tau_measured_ - model_.G_).transpose()<<" "<<tau_ext_.transpose()<<std::endl;
 
-        Fr3Controller::saveState();
+        if(est_map_[current_task] != 1)
+            Fr3Controller::saveState(); // save data only for peg-in-hole task.
+
+
         return ctrl;
     }
 
@@ -753,6 +743,7 @@ namespace MjController{
             ctrl = Fr3Controller::masi(x_hole, r_hole, t_hole);
         }
 
+
         return ctrl;
     }
 
@@ -780,7 +771,24 @@ namespace MjController{
 
     void Fr3Controller::saveState()
     {   
-        save_joint_q<<t_<<" "<< q_.transpose()<<std::endl;
-        // save_task_p<<t_<<" "<<x_.transpose()<<" "<<v_lpf_.head<3>().transpose()<<std::endl;
+        Eigen::Vector3d rpy;
+        Eigen::Vector6d f_action;
+        rpy = rot2Euler(R_);
+
+        f_action = model_.J_bar_.transpose()*(tau_d_ - model_.NLE_);
+
+        save_robot_cmd << t_ << " " << pose_d_.transpose() << " " << gw_.transpose() << " " << f_action.transpose() << std::endl;
+        save_robot_obs << t_ << " " << x_.transpose() << " "<< rpy.transpose() << " " << gw_.transpose() << " "<< f_contact_.transpose() << std::endl;
+
+    }
+
+    Eigen::VectorXd Fr3Controller::getDesiredPose(const Eigen::Ref<const Eigen::VectorXd> &x_goal,
+                                                  const Eigen::Ref<const Eigen::MatrixXd> &r_goal)
+    {
+        Eigen::Vector6d pose;
+        pose.head<3>() = x_goal;
+        pose.tail<3>() = rot2Euler(r_goal);
+
+        return pose;
     }
 }

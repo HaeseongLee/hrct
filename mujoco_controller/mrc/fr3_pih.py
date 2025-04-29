@@ -161,15 +161,8 @@ class Fr3PiHController(Node):
                     self.th.send_toggle_attachment()
                 else:
                     self.th.send_toggle_detachment()
-                
-                    
-                # if(self.controller.next_task_):                    
-                    # self.controller.next_task_ = False
 
             # self.controller.saveState()
 
         return ctrl
     
-    # def runExecutor(self):
-    #     # self.executor.spin()
-    #     rclpy.spin(self.th)
